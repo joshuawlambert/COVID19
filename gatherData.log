@@ -1,0 +1,22 @@
+
+Attaching package: ‘shiny’
+
+The following object is masked from ‘package:geosphere’:
+
+    span
+
+
+Attaching package: ‘htmltools’
+
+The following object is masked from ‘package:geosphere’:
+
+    span
+
+trying URL 'https://static01.nyt.com/newsgraphics/2020/01/21/china-coronavirus/9483cba35612e9540bab09a69331e54b4bc19041/build/js/chunks/model-lite.js'
+Content type 'application/javascript' length 5863571 bytes (5.6 MB)
+==================================================
+downloaded 5.6 MB
+
+ [1]      1   6812 245729 254061 254066 254071 254996 255001 255006 265571
+[11] 265635
+[1] 2601   27
