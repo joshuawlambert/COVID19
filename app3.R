@@ -9,16 +9,16 @@ library(shinybusy)
 ui <- fluidPage(
   h1("Choropleth maps useful in assessing COVID-19 within the United States"),
   uiOutput(outputId = "lastUpdate"),
-  tags$a(href="https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-counties.csv", "Click here for Case Data,   "),
+  tags$a(href="https://www.nytimes.com/interactive/2020/us/coronavirus-us-cases.html", "Click here for Case Data,   "),
   tags$a(href="https://hifld-geoplatform.opendata.arcgis.com/datasets/hospitals/data?geometry=134.132%2C-16.829%2C-165.048%2C72.120&orderBy=STATE", "Click here for Hospital Data,  "),
   tags$a(href="https://khn.org/wp-content/uploads/sites/2/2020/03/KHN_ICU_bed_county_analysis.zip", "Click here for ICU Data"),
   tags$a(href="https://github.com/joshuawlambert/COVID19", " ---- Made by Dr. Joshua Lambert (click here for code) ----"),
   add_busy_gif(src = "https://media.giphy.com/media/1416VN7GIFAAmI/giphy.gif", height = 200, width = 200,position = "full-page"),
-  leafletOutput("mymap",height = "900")
+  leafletOutput("mymap",height = "800")
 )
 
 server <- function(input, output, session) {
-  load(file = "/srv/shiny-server/COVID19/data/data.RData")
+  load(file = "data/data.RData")
   
   
   #define bins, colors, and labels for maps
@@ -112,14 +112,8 @@ server <- function(input, output, session) {
   ) %>% lapply(htmltools::HTML)
   
   ##ICU beds per cases 60 miles
-  bins.icubedspercases.60 <- unique(c(0,1,round(quantile(mapCounty$icubedspercases.60,probs = c( 0.01, 0.05, 0.10, 0.20, 0.25, 0.50, 0.75, 1),na.rm = TRUE),digits = 0)))
-  pal.icubedspercases.60 <- function(x){
-    tmp<- colorBin("YlOrRd", domain = mapCounty$icubedspercases.60 , bins = bins.icubedspercases.60,reverse = TRUE,na.color = "#FFFFFF")
-    tmp2<-tmp(x)
-    tmp2[which(tmp2=="#B10026")]<-"#000000"
-    return(tmp2)
-    }
-  
+  bins.icubedspercases.60 <- unique(round(quantile(mapCounty$icubedspercases.60,probs = c(0, 0.01, 0.05, 0.10, 0.20, 0.25, 0.50, 0.75, 1),na.rm = TRUE),digits = 0))
+  pal.icubedspercases.60 <- colorBin("YlOrRd", domain = mapCounty$icubedspercases.60 , bins = bins.icubedspercases.60,reverse = TRUE,na.color = "#FFFFFF")
   labels.icubedspercases.60 <- sprintf(
     "<strong>%s</strong><br/>%g ICU Beds(within 60 miles of county) per # of cases",
     paste(mapCounty$names,"county"),  mapCounty$icubedspercases.60
@@ -130,8 +124,8 @@ server <- function(input, output, session) {
     
     # legends not working yet
     # %>%  addLegend(pal = pal.deaths, values = ~pal.deaths(deaths), opacity = 0.7, title = "Confirmed Deaths",
-    #position = "topleft",na.label = "No Confirmed Deaths", group = "Confirmed Deaths") 
-    
+    # position = "topleft",na.label = "No Confirmed Deaths", group = "Confirmed Deaths")
+
     m2=m %>%  addPolygons(
       group = "Confirmed Cases",
       fillColor = ~pal.cases(cases),
@@ -149,8 +143,9 @@ server <- function(input, output, session) {
       labelOptions = labelOptions(
         style = list("font-weight" = "normal", padding = "3px 8px"),
         textsize = "15px",
-        direction = "auto")
-    ) %>%
+        direction = "auto") 
+    ) %>%  addLegend(pal = pal.cases, values = ~pal.cases(cases), opacity = 0.7, title = "Confirmed Cases",
+                     position = "bottomleft",na.label = "No Confirmed Cases", group = "Confirmed Cases") %>%
       addPolygons(
         group = "Confirmed Deaths",
         fillColor = ~pal.deaths(deaths),
@@ -169,7 +164,8 @@ server <- function(input, output, session) {
           style = list("font-weight" = "normal", padding = "3px 8px"),
           textsize = "15px",
           direction = "auto")
-      ) %>%
+      ) %>%  addLegend(pal = pal.deaths, values = ~pal.deaths(deaths), opacity = 0.7, title = "Confirmed Deaths",
+                       position =  "bottomleft",na.label = "No Confirmed Deaths", group = "Confirmed Deaths") %>%
       addPolygons(
         group = "All Hospital Beds",
         fillColor = ~pal.hospbeds(beds),
@@ -188,7 +184,8 @@ server <- function(input, output, session) {
           style = list("font-weight" = "normal", padding = "3px 8px"),
           textsize = "15px",
           direction = "auto")
-      ) %>%
+      ) %>% addLegend(pal = pal.hospbeds, values = ~pal.hospbeds(beds), opacity = 0.7, title = "Hospital Beds",
+                     position =  "bottomleft",na.label = "No Confirmed Cases", group = 'All Hospital Beds') %>% 
       addPolygons(
         group = "Icu Beds",
         fillColor = ~pal.icubeds(icubeds),
